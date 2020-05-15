@@ -1,0 +1,6 @@
+---
+# defaults file for ansible-role-distcc
+distcc_logging: false
+distcc_service_enabled: true
+package_name: 'distcc'
+march: 'x86-64'

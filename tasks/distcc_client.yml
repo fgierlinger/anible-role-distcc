@@ -1,0 +1,89 @@
+---
+- name: client | check mandatory variables
+  assert:
+      that:
+          - distcc_volunteers is defined
+
+- name: client | get local cpus
+  setup:
+      filter: 'ansible_processor_vcpus'
+
+- name: client | calculate total cpus
+  set_fact:
+    total_cpus: '{{ total_cpus|default([ansible_processor_vcpus]) + [item.cpus] }}'
+  loop: '{{ distcc_volunteers }}'
+  check_mode: false
+  changed_when: false
+
+- debug: var=total_cpus
+  tags: [never, debug]
+
+- name: client | set cpu helper vars
+  set_fact:
+      makeopts:
+          jobs: '{{ (total_cpus|sum)*2+1 }}'
+          load: '{{ ansible_processor_vcpus }}'
+
+- debug: var=makeopts
+  tags: [never, debug]
+
+- name: client | setting makeopts in make.conf
+  lineinfile:
+      path: /etc/portage/make.conf
+      regex: '^MAKEOPTS='
+      line: 'MAKEOPTS="-j{{ makeopts.jobs }} -l{{ makeopts.load }}"'
+
+- name: client | settings features in make.conf
+  lineinfile:
+      path: /etc/portage/make.conf
+      regex: '^FEATURES='
+      line: 'FEATURES="distcc"'
+      insertafter: 'MAKEOPTS'
+
+- name: client | get cpu architecture
+  shell: |
+      set -o pipefail
+      gcc -### -march=native -x c - 2>&1 | \
+      grep --color -P -o "march=(?!native)[\w-]+" | \
+      sed 's/march=//'
+  register: march
+  check_mode: False
+  changed_when: False
+
+- name: client | debug march
+  debug: var=march.stdout
+  tags: [never, debug]
+
+- name: client | replace march=native parameter
+  replace:
+      path: /etc/portage/make.conf
+      regexp: '^(COMMON_FLAGS=".*)(-march=\w+)(.*")$'
+      replace: '\g<1>-march={{ march.stdout }}\g<3>'
+
+- name: client | get current volunteers
+  shell: |
+      set -o pipefail
+      grep -P '^[^#]' /etc/distcc/hosts || true
+  register: current_volunteers
+  changed_when: false
+  check_mode: false
+
+# TODO
+# distcc_volunteers is a list containing an dict. The 'addr' dict element
+# contains the hostname. So item should not be in distcc_volunteers[*].addr.
+# The code below does not work at the moment. Subelements expect a list under
+# the specified key.
+#- name: client | remove unlisted volunteers
+#  lineinfile:
+#      path: /etc/distcc/hosts
+#      line: '{{ item }}'
+#      state: absent
+#  loop: '{{ current_volunteers.stdout_lines }}'
+#  when: item not in distcc_volunteers|subelements('addr')
+
+- name: client | add volunteers to /etc/distcc/hosts
+  lineinfile:
+      path: /etc/distcc/hosts
+      line: '{{ item.addr }}'
+      state: present
+  loop: "{{ distcc_volunteers }}"

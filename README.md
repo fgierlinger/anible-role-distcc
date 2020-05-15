@@ -21,9 +21,26 @@ None
 Example Playbook
 ----------------
 
-    - hosts: servers
+    # configure hosts as volunteers (hosts doing the actual job)
+    - hosts: serverWithManyCPUs
+      vars:
+        distcc_roles: ['volunteer']
+        distcc_allowed_nets: ['192.168.0.0/24']
       roles:
-         - { role: fgierlinger.distcc }
+         - fgierlinger.distcc
+
+    # configure clients with static volunteer ips
+    - hosts: clients
+      vars:
+        distcc_roles: ['clients']
+        distcc_volunteers:
+          - addr: 'serverip.example.com'
+            cpus: 8
+          - addr: 'hugeserver.example.com'
+            cpus: 32
+      roles:
+         - fgierlinger.distcc
+
 
 License
 -------

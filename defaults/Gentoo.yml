@@ -1,0 +1,3 @@
+---
+# defaults for Gentoo
+package_name: 'sys-devel/distcc'

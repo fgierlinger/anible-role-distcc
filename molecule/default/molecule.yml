@@ -1,0 +1,26 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint: |
+    set -e
+    yamllint .
+    ansible-lint .
+platforms:
+  - name: gentoo-amd64
+    #image: "fgierlinger/gentoo-amd64:latest"
+    image: fcca1a28d73a
+    command: ""
+    tmpfs:
+        - /run
+        - /tmp
+    volumes:
+        - /dev:/dev:ro
+        - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
+    pre_build_image: true
+provisioner:
+  name: ansible
+verifier:
+  name: ansible

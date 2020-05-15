@@ -1,0 +1,18 @@
+---
+- name: create logfile
+  copy:
+      dest: /var/log/distccd.log
+      owner: distcc
+      group: root
+      mode: 0640
+      force: no
+      content: ''
+
+- name: enable logging
+  lineinfile:
+      path: /etc/conf.d/distccd
+      regex: '^DISTCCD_OPTS="\$\{DISTCCD_OPTS\}.*--log-level'
+      line: 'DISTCCD_OPTS="${DISTCCD_OPTS} --log-level info --log-file /var/log/distccd.log"'
+  notify: restart distccd
+
+# TODO logrotate

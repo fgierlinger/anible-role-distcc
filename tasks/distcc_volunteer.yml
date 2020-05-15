@@ -1,0 +1,35 @@
+---
+- name: volunteer | get all previously allowed hosts
+  shell: |
+      set -o pipefail
+      grep -o -P '^[^#].* \-\-allow [^\b"]+' /etc/conf.d/distccd | \
+      grep -o -P '\-\-allow [^\b"]+' | \
+      sed 's/--allow //g'
+  register: allowed_hosts
+  changed_when: false
+  check_mode: false
+
+- name: volunteer | remove hosts not specified
+  lineinfile:
+      path: /etc/conf.d/distccd
+      line: 'DISTCCD_OPTS="${DISTCCD_OPTS} --allow {{ item }}"'
+      state: absent
+  loop: '{{ allowed_hosts.stdout_lines }}'
+  when: item not in distcc_allowed_nets
+  notify: restart distccd
+
+- name: volunteer | allow hosts in distcc config
+  lineinfile:
+      path: /etc/conf.d/distccd
+      regex: 'DISTCCD_OPTS="${DISTCCD_OPTS} --allow '
+      line: 'DISTCCD_OPTS="${DISTCCD_OPTS} --allow {{ item }}"'
+      insertafter: '# example:  --listen 192.168.0.2'
+      create: true
+  loop: '{{ distcc_allowed_nets }}'
+  when: item != hostvars[inventory_hostname]["ansible_default_ipv4"]["address"]
+  notify: restart distccd
+
+- name: volunteer | enable distcc
+  service:
+      name: distccd
+      enabled: '{{ distcc_service_enabled }}'
