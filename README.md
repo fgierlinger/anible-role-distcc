@@ -1,4 +1,4 @@
-Anible Role: distcc
+Ansible Role: distcc
 =========
 
 Ansible role to deploy distcc.
