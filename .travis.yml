@@ -1,6 +1,6 @@
 ---
 language: python
-python: "2.7"
+services: docker
 
 env:
   global:
@@ -31,8 +31,8 @@ before_script:
   # Rename role to match galaxy name
   - cd ../
   - ls
-  - mv ansible-role-${ROLE_NAME} fgierlinger.${ROLE_NAME}
-  - cd fgierlinger.${ROLE_NAME}
+  - mv ansible-role-$ROLE_NAME fgierlinger.$ROLE_NAME
+  - cd fgierlinger.$ROLE_NAME
 
 script:
   # Basic role syntax check
