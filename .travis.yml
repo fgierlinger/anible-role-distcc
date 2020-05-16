@@ -27,7 +27,6 @@ install:
 before_script:
   # Rename role to match galaxy name
   - cd ../
-  - ls
   - mv ansible-role-$ROLE_NAME fgierlinger.$ROLE_NAME
   - cd fgierlinger.$ROLE_NAME
 
