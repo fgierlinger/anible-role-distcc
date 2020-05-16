@@ -9,8 +9,7 @@ lint: |
     ansible-lint .
 platforms:
   - name: gentoo-amd64
-    #image: "fgierlinger/gentoo-amd64:latest"
-    image: fcca1a28d73a
+    image: "fgierlinger/gentoo-amd64:latest"
     command: ""
     tmpfs:
         - /run
