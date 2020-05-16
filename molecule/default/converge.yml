@@ -2,7 +2,7 @@
 - name: Converge
   hosts: all
   tasks:
-    - name: "Include ansible-role-distcc"
+    - name: "Include fgierlinger.distcc"
       vars:
           distcc_roles: ['volunteer', 'client']
           distcc_volunteers:
@@ -10,4 +10,4 @@
                 cpus: 1
           distcc_allowed_nets: ['127.0.0.1']
       include_role: 
-        name: "ansible-role-distcc"
+        name: "fgierlinger.distcc"

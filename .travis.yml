@@ -1,9 +1,10 @@
 ---
 language: python
-python: "2.7"
+services: docker
 
-# Use the new container infrastructure
-sudo: false
+env:
+  global:
+    - ROLE_NAME: distcc
 
 # Install ansible
 addons:
@@ -23,10 +24,11 @@ install:
   # Create ansible.cfg with correct roles_path
   - printf '[defaults]\nroles_path=../' >ansible.cfg
 
+before_script:
   # Rename role to match galaxy name
   - cd ../
   - mv ansible-role-$ROLE_NAME fgierlinger.$ROLE_NAME
-  - cd fgierlinger.role_name
+  - cd fgierlinger.$ROLE_NAME
 
 script:
   # Basic role syntax check
